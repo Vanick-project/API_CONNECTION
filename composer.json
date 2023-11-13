@@ -7,14 +7,29 @@
         "php": ">=7.2.5",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "doctrine/annotations": "^2.0",
+        "doctrine/doctrine-bundle": "^2.10",
+        "doctrine/doctrine-migrations-bundle": "^3.2",
+        "doctrine/orm": "^2.16",
+        "sensio/framework-extra-bundle": "^6.2",
+        "symfony/asset": "5.4.*",
         "symfony/console": "5.4.*",
         "symfony/dotenv": "5.4.*",
         "symfony/flex": "^1.17|^2",
         "symfony/framework-bundle": "5.4.*",
+        "symfony/http-client": "5.4.*",
+        "symfony/mailer": "5.4.*",
+        "symfony/mailjet-mailer": "5.4.*",
+        "symfony/monolog-bundle": "^3.8",
+        "symfony/notifier": "5.4.*",
         "symfony/runtime": "5.4.*",
-        "symfony/yaml": "5.4.*"
-    },
-    "require-dev": {
+        "symfony/twig-bundle": "5.4.*",
+        "symfony/twilio-notifier": "5.4.*",
+        "symfony/yaml": "5.4.*",
+        "twig/cssinliner-extra": "^3.7",
+        "twig/extra-bundle": "^3.7",
+        "twig/twig": "^2.12|^3.0",
+        "twilio/sdk": "^7.11"
     },
     "config": {
         "allow-plugins": {
@@ -64,5 +79,8 @@
             "allow-contrib": false,
             "require": "5.4.*"
         }
+    },
+    "require-dev": {
+        "symfony/maker-bundle": "^1.43"
     }
 }

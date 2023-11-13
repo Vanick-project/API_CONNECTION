@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{% apply inline_css %}
+    <style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+
+p {}
+</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Issue Oracle connections</h1>    
+    <table>
+        <tr>
+            <th>Username</th>
+            <th>Machine</th>
+            <th>Nbconnect</th>
+        </tr>
+    {% for vol in listConnect %}
+        <tr>
+            <td>{{ vol.Username }}</td>
+            <td>{{ vol.Machine }}</td>
+            <td>{{ vol.Nbconnect }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+    <h3>The sum of the connections is {{sumConnect}}</h3>
+    <img src="{{ email.image('@images/Alstef-1.png') }}" alt="Logo">
+    
+
+    {% endapply %}
+
+</body>
+</html>
