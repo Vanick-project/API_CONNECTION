@@ -2,4 +2,5 @@ framework:
   mailer:
     dsn: "%env(MAILER_DSN)%"
     headers:
-      from: Boss <djamenvanick@gmail.com>
+      from: Alstef Canada <reporting@alstefgroup.com>
+      #from: Alstef_reporting <reporting@alstefgroup.com> Boss <djamenvanick@gmail.com>

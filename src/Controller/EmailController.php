@@ -54,9 +54,9 @@ class EmailController extends AbstractController
             // Envoi d'email
             //The sender mail is store inside mailer.yaml
             $email = (new TemplatedEmail())
-                ->to('vanick.djamen-djofang@alstefgroup.com')//to modify
+                ->to('abdel.eddaoui@alstefgroup.com')//to modify
                 ->subject('Oracle connection exceeding')
-                //->cc('abdel.eddaoui@alstefgroup.com')
+                ->cc('vanick.djamen-djofang@alstefgroup.com')
                 ->htmlTemplate('email/welcome.html.twig')// to modify
                 ->context([
                     'listConnect' => $result,
