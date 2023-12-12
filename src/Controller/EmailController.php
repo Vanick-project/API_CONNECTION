@@ -5,6 +5,7 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Routing\Annotation\Route;
 use Psr\Log\LoggerInterface;
@@ -12,6 +13,7 @@ use Psr\Log\LoggerInterface;
 use Twilio\Rest\Client;
 
 use Doctrine\DBAL\Connection;
+use PhpParser\Node\Stmt\Echo_;
 
 class EmailController extends AbstractController
 {
@@ -35,7 +37,9 @@ class EmailController extends AbstractController
             $sqlSum = "select sum(Nbconnect) from connection";
         $statement = $this->connection->executeQuery($sqlSum); 
         $resultSum = $statement->fetchOne();
-
+            $sqlAck = "SELECT ACK FROM connection  ";
+        $statement = $this->connection->executeQuery($sqlAck);
+        $ackValue = $statement->fetchAllAssociative();
         // Your Twilio credentials
         $accountSid = 'AC37f82411bd9eee1c077bf0080fde855a'; //to modify
         $authToken = '1f00ad577c942262024d97956ac218f3';// to modify
@@ -46,35 +50,48 @@ class EmailController extends AbstractController
 
          // Create a Twilio client
         $twilio = new Client($accountSid, $authToken);
-        
 
-        if ($resultSum > 200) {          
-            
-
-            // Envoi d'email
+        // Envoi d'email
             //The sender mail is store inside mailer.yaml
             $email = (new TemplatedEmail())
-                ->to('abdel.eddaoui@alstefgroup.com')//to modify
+                ->to('tyfh1qbat@lists.mailjet.com')//to modify
                 ->subject('Oracle connection exceeding')
-                ->cc('vanick.djamen-djofang@alstefgroup.com')
+                //->cc('vanick.djamen-djofang@alstefgroup.com')
                 ->htmlTemplate('email/welcome.html.twig')// to modify
                 ->context([
                     'listConnect' => $result,
                     'sumConnect' => $resultSum
                 ]);
+        
+            
+        
+            
+        if ($resultSum > 200) {          
+            
+            foreach($ackValue as $value){
+                if($value['ACK']  == NULL || $value['ACK']  == '' )
+                    { 
+                        $sqlInsert = "UPDATE connection SET ACK = 'OUI' WHERE ACK IS NULL OR ACK = '' ";
+                        $statement = $this->connection->executeQuery($sqlInsert);
+                        $value = $statement->fetchOne();
+                        // send mail
+                        $mailer->send($email);
+                         // Envoi SMS
+                        $twilio->messages->create(
+                            $toPhoneNumber,
+                            [
+                                'from' => $twilioPhoneNumber,
+                                'body' => 'Attention nombre de connections vers Oracle dépassé regadez vos mails!!!                             the number of connection to Oracle exceed look at your mail!!!'
+                            ]
+                        );
+                        break;
+                    } 
+                else return die;
+            }                      
+            
                 
-                        
-
-            $mailer->send($email);
-                 // Envoi SMS
-           $twilio->messages->create(
-                $toPhoneNumber,
-                [
-                    'from' => $twilioPhoneNumber,
-                    'body' => 'Attention nombre de connections vers Oracle dépassé regadez vos mails!!!                             the number of connection to Oracle exceed look at your mail!!!'
-                ]
-            );
-            // Rendu de la page avec les données
+           // Rendu de la page avec les données
+            
         return $this->render('email/welcome.html.twig', [
             'listConnect' => $result,
             'sumConnect' => $resultSum,
