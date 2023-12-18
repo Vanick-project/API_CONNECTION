@@ -5,7 +5,7 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Routing\Annotation\Route;
 use Psr\Log\LoggerInterface;
@@ -13,7 +13,7 @@ use Psr\Log\LoggerInterface;
 use Twilio\Rest\Client;
 
 use Doctrine\DBAL\Connection;
-use PhpParser\Node\Stmt\Echo_;
+
 
 class EmailController extends AbstractController
 {
@@ -26,8 +26,15 @@ class EmailController extends AbstractController
     /**
      * @Route("/email", name="app_email")
      */
-    public function index(MailerInterface $mailer, LoggerInterface $logger): Response
+    public function index( MailerInterface $mailer, LoggerInterface $logger): Response
     {
+        $emailList = [];
+        $filePath = $this->getParameter('kernel.project_dir') . '/public/mail.txt';
+        $filesystem = new Filesystem();
+        if ($filesystem->exists($filePath)) {
+            $fileContent = file_get_contents($filePath);
+            $emailList = explode("\n", $fileContent);
+        }
 
         try{
             $sql = "select * from connection";
@@ -37,6 +44,7 @@ class EmailController extends AbstractController
             $sqlSum = "select sum(Nbconnect) from connection";
         $statement = $this->connection->executeQuery($sqlSum); 
         $resultSum = $statement->fetchOne();
+
             $sqlAck = "SELECT ACK FROM connection  ";
         $statement = $this->connection->executeQuery($sqlAck);
         $ackValue = $statement->fetchAllAssociative();
@@ -50,13 +58,14 @@ class EmailController extends AbstractController
 
          // Create a Twilio client
         $twilio = new Client($accountSid, $authToken);
-
+            
         // Envoi d'email
             //The sender mail is store inside mailer.yaml
             $email = (new TemplatedEmail())
-                ->to('tyfh1qbat@lists.mailjet.com')//to modify
+                ->from('reporting@alstefgroup.com')
+                ->to(...$emailList)//Add mail inside the text file
                 ->subject('Oracle connection exceeding')
-                //->cc('vanick.djamen-djofang@alstefgroup.com')
+                ->cc('abdel.eddaoui@alstefgroup.com')
                 ->htmlTemplate('email/welcome.html.twig')// to modify
                 ->context([
                     'listConnect' => $result,
@@ -71,23 +80,24 @@ class EmailController extends AbstractController
             foreach($ackValue as $value){
                 if($value['ACK']  == NULL || $value['ACK']  == '' )
                     { 
+                        $mailer->send($email);
                         $sqlInsert = "UPDATE connection SET ACK = 'OUI' WHERE ACK IS NULL OR ACK = '' ";
                         $statement = $this->connection->executeQuery($sqlInsert);
-                        $value = $statement->fetchOne();
-                        // send mail
-                        $mailer->send($email);
+                        $value = $statement->fetchOne();                       
+                        
                          // Envoi SMS
-                        $twilio->messages->create(
-                            $toPhoneNumber,
-                            [
-                                'from' => $twilioPhoneNumber,
-                                'body' => 'Attention nombre de connections vers Oracle dépassé regadez vos mails!!!                             the number of connection to Oracle exceed look at your mail!!!'
-                            ]
-                        );
+                        // $twilio->messages->create(
+                        //     $toPhoneNumber,
+                        //     [
+                        //         'from' => $twilioPhoneNumber,
+                        //         'body' => 'Attention nombre de connections vers Oracle dépassé regadez vos mails!!!                             the number of connection to Oracle exceed look at your mail!!!'
+                        //     ]
+                        // );
                         break;
                     } 
                 else return die;
-            }                      
+            }
+                                  
             
                 
            // Rendu de la page avec les données
